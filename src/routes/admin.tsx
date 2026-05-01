@@ -71,6 +71,7 @@ function Dashboard() {
   const totalRevenue = purchases.reduce((s, p) => s + p.price, 0);
   const pendingTopups = topUps.filter((t) => t.status === "pending").length;
   const lowStock = products.filter((p) => p.stock.length <= 2).length;
+  
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
       <StatCard label="ผู้ใช้ทั้งหมด" value={users.length} />
@@ -107,12 +108,15 @@ function ProductsTab() {
       const exists = d.products.some((x) => x.id === p.id);
       return { ...d, products: exists ? d.products.map((x) => x.id === p.id ? p : x) : [p, ...d.products] };
     });
+    // ส่งสัญญาณเตือนให้ระบบ Sync หน้าบ้าน
+    window.dispatchEvent(new Event("storage"));
     setEditing(null);
     toast.success("บันทึกสินค้าแล้ว");
   };
 
   const remove = (id: string) => {
     update((d) => ({ ...d, products: d.products.filter((p) => p.id !== id) }));
+    window.dispatchEvent(new Event("storage"));
     toast.success("ลบสินค้าแล้ว");
   };
 
@@ -284,13 +288,20 @@ function ProductForm({ product, promoCodes, onSave, onCancel }: {
 function PromoTab() {
   const { promoCodes, update } = useStore();
   const [code, setCode] = useState(""); const [pct, setPct] = useState(10);
+  
   const add = () => {
     if (!code.trim()) return;
     const c: PromoCode = { id: Math.random().toString(36).slice(2, 10), code: code.trim(), discountPercent: pct };
     update((d) => ({ ...d, promoCodes: [c, ...d.promoCodes] }));
+    window.dispatchEvent(new Event("storage"));
     setCode(""); setPct(10); toast.success("เพิ่มโค้ดแล้ว");
   };
-  const remove = (id: string) => update((d) => ({ ...d, promoCodes: d.promoCodes.filter((c) => c.id !== id) }));
+
+  const remove = (id: string) => {
+    update((d) => ({ ...d, promoCodes: d.promoCodes.filter((c) => c.id !== id) }));
+    window.dispatchEvent(new Event("storage"));
+  };
+
   return (
     <Card className="p-6 border-primary/40 mt-4 space-y-4">
       <div className="flex gap-2 items-end">
@@ -314,6 +325,19 @@ function PromoTab() {
 // ---------------- TopUps ----------------
 function TopUpsTab() {
   const { topUps, approveTopUp, rejectTopUp } = useStore();
+  
+  const approveWithSync = (id: string) => {
+    approveTopUp(id);
+    window.dispatchEvent(new Event("storage"));
+    toast.success("อนุมัติแล้ว");
+  };
+
+  const rejectWithSync = (id: string, reason: string) => {
+    rejectTopUp(id, reason);
+    window.dispatchEvent(new Event("storage"));
+    toast.success("ปฏิเสธแล้ว");
+  };
+
   return (
     <div className="space-y-3 mt-4">
       {topUps.length === 0 && <p className="text-muted-foreground text-sm">ยังไม่มีรายการ</p>}
@@ -332,8 +356,8 @@ function TopUpsTab() {
               </Badge>
               {t.status === "pending" && (
                 <>
-                  <Button size="sm" onClick={() => { approveTopUp(t.id); toast.success("อนุมัติแล้ว"); }}><Check className="h-3 w-3 mr-1" />อนุมัติ</Button>
-                  <Button size="sm" variant="destructive" onClick={() => { rejectTopUp(t.id, "ไม่ผ่านตรวจสอบ"); toast.success("ปฏิเสธแล้ว"); }}><X className="h-3 w-3 mr-1" />ปฏิเสธ</Button>
+                  <Button size="sm" onClick={() => approveWithSync(t.id)}><Check className="h-3 w-3 mr-1" />อนุมัติ</Button>
+                  <Button size="sm" variant="destructive" onClick={() => rejectWithSync(t.id, "ไม่ผ่านตรวจสอบ")}><X className="h-3 w-3 mr-1" />ปฏิเสธ</Button>
                 </>
               )}
             </div>
@@ -347,10 +371,17 @@ function TopUpsTab() {
 // ---------------- Users ----------------
 function UsersTab() {
   const { users, update } = useStore();
+  
   const adjust = (username: string, delta: number) => {
     update((d) => ({ ...d, users: d.users.map((u) => u.username === username ? { ...u, wallet: Math.max(0, u.wallet + delta) } : u) }));
+    window.dispatchEvent(new Event("storage"));
   };
-  const remove = (username: string) => update((d) => ({ ...d, users: d.users.filter((u) => u.username !== username) }));
+
+  const remove = (username: string) => {
+    update((d) => ({ ...d, users: d.users.filter((u) => u.username !== username) }));
+    window.dispatchEvent(new Event("storage"));
+  };
+
   return (
     <div className="space-y-2 mt-4">
       {users.length === 0 && <p className="text-muted-foreground text-sm">ยังไม่มีผู้ใช้</p>}
@@ -373,22 +404,31 @@ function UsersTab() {
 function SiteTab() {
   const { settings, update } = useStore();
   const [logoFile, setLogoFile] = useState<string>("");
+  
   const handleLogo = async (f: File) => {
     const url = await fileToDataUrl(f);
     setLogoFile(url);
     update((d) => ({ ...d, settings: { ...d.settings, logo: url } }));
+    window.dispatchEvent(new Event("storage"));
     toast.success("เปลี่ยนโลโก้แล้ว");
   };
-  const setField = <K extends keyof typeof settings>(k: K, v: (typeof settings)[K]) =>
+
+  const setField = <K extends keyof typeof settings>(k: K, v: (typeof settings)[K]) => {
     update((d) => ({ ...d, settings: { ...d.settings, [k]: v } }));
+    window.dispatchEvent(new Event("storage"));
+  };
 
   const addBanner = async (f: File) => {
     const url = await fileToDataUrl(f);
     update((d) => ({ ...d, settings: { ...d.settings, banners: [{ id: Math.random().toString(36).slice(2), image: url }, ...d.settings.banners] } }));
+    window.dispatchEvent(new Event("storage"));
     toast.success("เพิ่มแบนเนอร์แล้ว");
   };
-  const removeBanner = (id: string) =>
+
+  const removeBanner = (id: string) => {
     update((d) => ({ ...d, settings: { ...d.settings, banners: d.settings.banners.filter((b) => b.id !== id) } }));
+    window.dispatchEvent(new Event("storage"));
+  };
 
   return (
     <Card className="p-6 border-primary/40 mt-4 space-y-4">
@@ -431,8 +471,11 @@ function SiteTab() {
 function ThemeTab() {
   const { settings, update } = useStore();
   const t = settings.theme;
-  const setT = (k: keyof typeof t, v: number | string) =>
+  
+  const setT = (k: keyof typeof t, v: number | string) => {
     update((d) => ({ ...d, settings: { ...d.settings, theme: { ...d.settings.theme, [k]: v } } }));
+    window.dispatchEvent(new Event("storage"));
+  };
 
   const presets = [
     { name: "Cyber Blue", hue: 235, chroma: 0.18, bg: "oklch(0.13 0.02 250)", surf: "oklch(0.17 0.03 250)", card: "oklch(0.18 0.04 250)" },
@@ -447,9 +490,12 @@ function ThemeTab() {
         <Label>เลือกธีมสำเร็จรูป</Label>
         <div className="flex flex-wrap gap-2 mt-2">
           {presets.map((p) => (
-            <Button key={p.name} variant="outline" onClick={() => update((d) => ({
-              ...d, settings: { ...d.settings, theme: { primaryHue: p.hue, primaryChroma: p.chroma, background: p.bg, surface: p.surf, card: p.card } }
-            }))}>
+            <Button key={p.name} variant="outline" onClick={() => {
+              update((d) => ({
+                ...d, settings: { ...d.settings, theme: { primaryHue: p.hue, primaryChroma: p.chroma, background: p.bg, surface: p.surf, card: p.card } }
+              }));
+              window.dispatchEvent(new Event("storage"));
+            }}>
               {p.name}
             </Button>
           ))}
@@ -489,8 +535,11 @@ function ThemeTab() {
 function ParticlesTab() {
   const { settings, update } = useStore();
   const p = settings.particles;
-  const setP = <K extends keyof typeof p>(k: K, v: (typeof p)[K]) =>
+  
+  const setP = <K extends keyof typeof p>(k: K, v: (typeof p)[K]) => {
     update((d) => ({ ...d, settings: { ...d.settings, particles: { ...d.settings.particles, [k]: v } } }));
+    window.dispatchEvent(new Event("storage"));
+  };
 
   return (
     <Card className="p-6 border-primary/40 mt-4 space-y-4">
@@ -530,16 +579,25 @@ function ParticlesTab() {
 function BanksTab() {
   const { settings, update } = useStore();
   const [b, setB] = useState<BankAccount>({ id: "", bankName: "", accountName: "", accountNumber: "" });
+  
   const add = () => {
     if (!b.bankName || !b.accountNumber) return toast.error("กรอกข้อมูลให้ครบ");
     const id = Math.random().toString(36).slice(2);
     update((d) => ({ ...d, settings: { ...d.settings, banks: [...d.settings.banks, { ...b, id }] } }));
+    window.dispatchEvent(new Event("storage"));
     setB({ id: "", bankName: "", accountName: "", accountNumber: "" });
     toast.success("เพิ่มบัญชีแล้ว");
   };
-  const remove = (id: string) => update((d) => ({ ...d, settings: { ...d.settings, banks: d.settings.banks.filter((x) => x.id !== id) } }));
-  const setSetting = <K extends keyof typeof settings>(k: K, v: (typeof settings)[K]) =>
+
+  const remove = (id: string) => {
+    update((d) => ({ ...d, settings: { ...d.settings, banks: d.settings.banks.filter((x) => x.id !== id) } }));
+    window.dispatchEvent(new Event("storage"));
+  };
+  
+  const setSetting = <K extends keyof typeof settings>(k: K, v: (typeof settings)[K]) => {
     update((d) => ({ ...d, settings: { ...d.settings, [k]: v } }));
+    window.dispatchEvent(new Event("storage"));
+  };
 
   return (
     <div className="space-y-4 mt-4">
