@@ -136,7 +136,8 @@ const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(
 
 const STORAGE_KEY = "basx_shop_v1";
 
-const defaultLogo = "/assets/logo-placeholder.png";
+import logoUrl from "@/assets/logo.png";
+const defaultLogo = logoUrl;
 
 const defaultSettings: SiteSettings = {
   shopName: "BasX SHOP",

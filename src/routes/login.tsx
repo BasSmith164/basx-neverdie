@@ -28,8 +28,11 @@ function LoginPage() {
       return;
     }
     toast.success("เข้าสู่ระบบสำเร็จ");
-    if (u === "BASX") navigate({ to: "/admin" });
-    else navigate({ to: "/" });
+    // delay so context state propagates before route guard runs
+    setTimeout(() => {
+      if (u === "BASX") navigate({ to: "/admin" });
+      else navigate({ to: "/" });
+    }, 50);
   };
 
   return (
