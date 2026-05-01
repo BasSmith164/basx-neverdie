@@ -20,19 +20,28 @@ function LoginPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    console.log("[login] submit start", { u, pLen: p.length });
     setLoading(true);
-    const r = await login(u, p);
-    setLoading(false);
-    if (!r.ok) {
-      toast.error(r.error || "ล็อกอินไม่สำเร็จ");
-      return;
+    try {
+      const r = await login(u, p);
+      console.log("[login] result", r);
+      setLoading(false);
+      if (!r.ok) {
+        toast.error(r.error || "ล็อกอินไม่สำเร็จ");
+        return;
+      }
+      toast.success("เข้าสู่ระบบสำเร็จ");
+      setTimeout(() => {
+        if (u === "BASX") navigate({ to: "/admin" });
+        else navigate({ to: "/" });
+      }, 50);
+    } catch (err) {
+      console.error("[login] error", err);
+      setLoading(false);
+      toast.error("เกิดข้อผิดพลาด");
     }
-    toast.success("เข้าสู่ระบบสำเร็จ");
-    // delay so context state propagates before route guard runs
-    setTimeout(() => {
-      if (u === "BASX") navigate({ to: "/admin" });
-      else navigate({ to: "/" });
-    }, 50);
+    return false;
   };
 
   return (
