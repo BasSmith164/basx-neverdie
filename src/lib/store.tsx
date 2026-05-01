@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import logoUrl from "@/assets/logo.png";
 
 // ---------- Types ----------
 export type Platform = "android" | "ios" | "pc";
@@ -136,7 +137,6 @@ const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(
 
 const STORAGE_KEY = "basx_shop_v1";
 
-import logoUrl from "@/assets/logo.png";
 const defaultLogo = logoUrl;
 
 const defaultSettings: SiteSettings = {
