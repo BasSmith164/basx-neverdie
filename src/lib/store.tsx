@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import logoUrl from "@/assets/logo.png";
 
 // ---------- Types ----------
 export type Platform = "android" | "ios" | "pc";
@@ -136,7 +137,7 @@ const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(
 
 const STORAGE_KEY = "basx_shop_v1";
 
-const defaultLogo = "/assets/logo-placeholder.png";
+const defaultLogo = logoUrl;
 
 const defaultSettings: SiteSettings = {
   shopName: "BasX SHOP",
@@ -261,7 +262,9 @@ function load(): StoreData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initial();
     const parsed = JSON.parse(raw);
-    return { ...initial(), ...parsed, settings: { ...defaultSettings, ...(parsed.settings || {}) } };
+    const mergedSettings = { ...defaultSettings, ...(parsed.settings || {}) };
+    if (!mergedSettings.logo) mergedSettings.logo = defaultLogo;
+    return { ...initial(), ...parsed, settings: mergedSettings };
   } catch {
     return initial();
   }
