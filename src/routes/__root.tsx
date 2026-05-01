@@ -24,8 +24,16 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BasX SHOP — Gaming Digital Store" },
-      { name: "description", content: "BasX SHOP ร้านขายไอเทมเกม โค้ด โปรเสริม สำหรับ Android, iOS, PC" },
+      { title: "BasX SHOP — Cheat Store" },
+      { name: "description", content: "BasX SHOP ร้านขายโปรฟีฟาย" },
+      { property: "og:title", content: "BasX SHOP — Cheat Store" },
+      { name: "twitter:title", content: "BasX SHOP — Cheat Store" },
+      { property: "og:description", content: "BasX SHOP ร้านขายโปรฟีฟาย" },
+      { name: "twitter:description", content: "BasX SHOP ร้านขายโปรฟีฟาย" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/WwDC6yddXDNniat2vugl2TM1Vlv1/social-images/social-1777665995336-ChatGPT_Image_1_พ.ค._2569_09_51_04.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/WwDC6yddXDNniat2vugl2TM1Vlv1/social-images/social-1777665995336-ChatGPT_Image_1_พ.ค._2569_09_51_04.webp" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
