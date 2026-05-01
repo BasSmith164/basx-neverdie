@@ -262,7 +262,9 @@ function load(): StoreData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initial();
     const parsed = JSON.parse(raw);
-    return { ...initial(), ...parsed, settings: { ...defaultSettings, ...(parsed.settings || {}) } };
+    const mergedSettings = { ...defaultSettings, ...(parsed.settings || {}) };
+    if (!mergedSettings.logo) mergedSettings.logo = defaultLogo;
+    return { ...initial(), ...parsed, settings: mergedSettings };
   } catch {
     return initial();
   }
