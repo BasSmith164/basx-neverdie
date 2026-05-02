@@ -318,19 +318,47 @@ const Ctx = createContext<StoreCtx | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<StoreData>(() => initial());
+  const [hydrated, setHydrated] = useState(false);
+  const skipNextSave = useState({ v: true })[0];
 
   // hydrate after mount (avoid SSR mismatch)
   useEffect(() => {
-    setData(load());
-  }, []);
+    const loaded = load();
+    skipNextSave.v = true;
+    setData(loaded);
+    setHydrated(true);
+  }, [skipNextSave]);
 
-  // persist
+  // persist (skip the very first hydration write)
   useEffect(() => {
+    if (!hydrated) return;
+    if (skipNextSave.v) {
+      skipNextSave.v = false;
+      return;
+    }
     save(data);
-  }, [data]);
+  }, [data, hydrated, skipNextSave]);
+
+  // cross-tab sync via storage event
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY || !e.newValue) return;
+      try {
+        const fresh = load();
+        skipNextSave.v = true;
+        setData(fresh);
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [skipNextSave]);
 
   // apply theme to CSS vars
   useEffect(() => {
+    if (typeof document === "undefined") return;
     const root = document.documentElement;
     const t = data.settings.theme;
     root.style.setProperty("--background", t.background);
