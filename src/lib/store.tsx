@@ -135,7 +135,11 @@ export async function sha256(text: string): Promise<string> {
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
-const STORAGE_KEY = "basx_shop_v1";
+// Deterministic id generator for SSR-safe initial data
+let _seedCounter = 0;
+const seedId = (prefix: string) => `${prefix}-${++_seedCounter}`;
+
+const STORAGE_KEY = "basx_shop_v2";
 
 const defaultLogo = logoUrl;
 
