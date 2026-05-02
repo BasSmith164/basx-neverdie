@@ -431,49 +431,66 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const buy = useCallback(
     (productId: string, code?: string) => {
-      if (!data.currentUser || data.isAdmin) return { ok: false, error: "กรุณาเข้าสู่ระบบ" };
-      const product = data.products.find((p) => p.id === productId);
-      if (!product) return { ok: false, error: "ไม่พบสินค้า" };
-      if (product.stock.length === 0) return { ok: false, error: "สินค้าหมด" };
-      let basePrice = product.salePrice ?? product.price;
-      if (code && product.promoCodeId) {
-        const promo = data.promoCodes.find((c) => c.id === product.promoCodeId);
-        if (promo && promo.code.toLowerCase() === code.trim().toLowerCase()) {
-          basePrice = Math.round(basePrice * (1 - promo.discountPercent / 100));
+      let result: { ok: boolean; error?: string; record?: PurchaseRecord } = { ok: false, error: "เกิดข้อผิดพลาด" };
+      setData((d) => {
+        if (!d.currentUser || d.isAdmin) {
+          result = { ok: false, error: "กรุณาเข้าสู่ระบบ" };
+          return d;
         }
-      }
-      const user = data.users.find((u) => u.username === data.currentUser);
-      if (!user) return { ok: false, error: "ผู้ใช้ไม่ถูกต้อง" };
-      if (user.wallet < basePrice) return { ok: false, error: "ยอดเงินใน Wallet ไม่พอ กรุณาเติมเงิน" };
-
-      const delivered = product.stock[0];
-      const record: PurchaseRecord = {
-        id: uid(),
-        username: user.username,
-        productId: product.id,
-        productName: product.name,
-        productImage: product.image,
-        price: basePrice,
-        delivered,
-        deliveryType: product.deliveryType,
-        createdAt: Date.now(),
-      };
-
-      setData((d) => ({
-        ...d,
-        users: d.users.map((u) =>
-          u.username === user.username
-            ? { ...u, wallet: u.wallet - basePrice, points: u.points + Math.floor(basePrice / 10) }
-            : u,
-        ),
-        products: d.products.map((p) =>
-          p.id === product.id ? { ...p, stock: p.stock.slice(1) } : p,
-        ),
-        purchases: [record, ...d.purchases],
-      }));
-      return { ok: true, record };
+        const product = d.products.find((p) => p.id === productId);
+        if (!product) {
+          result = { ok: false, error: "ไม่พบสินค้า" };
+          return d;
+        }
+        if (!product.stock || product.stock.length === 0) {
+          result = { ok: false, error: "สินค้าหมด" };
+          return d;
+        }
+        let basePrice = product.salePrice ?? product.price;
+        if (code && product.promoCodeId) {
+          const promo = d.promoCodes.find((c) => c.id === product.promoCodeId);
+          if (promo && promo.code.toLowerCase() === code.trim().toLowerCase()) {
+            basePrice = Math.round(basePrice * (1 - promo.discountPercent / 100));
+          }
+        }
+        const user = d.users.find((u) => u.username === d.currentUser);
+        if (!user) {
+          result = { ok: false, error: "ผู้ใช้ไม่ถูกต้อง" };
+          return d;
+        }
+        if (user.wallet < basePrice) {
+          result = { ok: false, error: "ยอดเงินใน Wallet ไม่พอ กรุณาเติมเงิน" };
+          return d;
+        }
+        const delivered = product.stock[0];
+        const record: PurchaseRecord = {
+          id: uid(),
+          username: user.username,
+          productId: product.id,
+          productName: product.name,
+          productImage: product.image,
+          price: basePrice,
+          delivered,
+          deliveryType: product.deliveryType,
+          createdAt: Date.now(),
+        };
+        result = { ok: true, record };
+        return {
+          ...d,
+          users: d.users.map((u) =>
+            u.username === user.username
+              ? { ...u, wallet: u.wallet - basePrice, points: u.points + Math.floor(basePrice / 10) }
+              : u,
+          ),
+          products: d.products.map((p) =>
+            p.id === product.id ? { ...p, stock: p.stock.slice(1) } : p,
+          ),
+          purchases: [record, ...d.purchases],
+        };
+      });
+      return result;
     },
-    [data.currentUser, data.isAdmin, data.products, data.promoCodes, data.users],
+    [],
   );
 
   const submitTopUp = useCallback(
