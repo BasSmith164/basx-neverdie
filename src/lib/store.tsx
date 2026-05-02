@@ -172,7 +172,7 @@ const defaultSettings: SiteSettings = {
   bankBotEnabled: false,
   banks: [
     {
-      id: uid(),
+      id: "bank-default-1",
       bankName: "ธนาคารกรุงเทพ",
       accountName: "BasX SHOP",
       accountNumber: "478-4-271134",
