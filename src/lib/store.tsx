@@ -135,7 +135,11 @@ export async function sha256(text: string): Promise<string> {
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
-const STORAGE_KEY = "basx_shop_v1";
+// Deterministic id generator for SSR-safe initial data
+let _seedCounter = 0;
+const seedId = (prefix: string) => `${prefix}-${++_seedCounter}`;
+
+const STORAGE_KEY = "basx_shop_v2";
 
 const defaultLogo = logoUrl;
 
@@ -168,7 +172,7 @@ const defaultSettings: SiteSettings = {
   bankBotEnabled: false,
   banks: [
     {
-      id: uid(),
+      id: "bank-default-1",
       bankName: "ธนาคารกรุงเทพ",
       accountName: "BasX SHOP",
       accountNumber: "478-4-271134",
@@ -176,79 +180,82 @@ const defaultSettings: SiteSettings = {
   ],
 };
 
-const sampleProducts = (): Product[] => [
-  {
-    id: uid(),
-    name: "Fluorite Hack iOS",
-    category: "Mod Menu",
-    platforms: ["ios"],
-    image: "",
-    price: 350,
-    salePrice: 300,
-    description: "โปรไวต์สำหรับ iOS เกมส์ FreeFire — ใช้งานได้ 30 วัน",
-    deliveryType: "both",
-    stock: [
-      { key: "FLU-IOS-AAAA-1111", link: "https://example.com/dl/fluorite-ios" },
-      { key: "FLU-IOS-BBBB-2222", link: "https://example.com/dl/fluorite-ios" },
-      { key: "FLU-IOS-CCCC-3333", link: "https://example.com/dl/fluorite-ios" },
-    ],
-    hot: true,
-  },
-  {
-    id: uid(),
-    name: "Gbox iOS [สำหรับติดตั้ง iPA]",
-    category: "Tool",
-    platforms: ["ios"],
-    image: "",
-    price: 250,
-    salePrice: null,
-    description: "Gbox สำหรับไว้ติดตั้ง iPA โปรต่าง ๆ",
-    deliveryType: "key",
-    stock: [{ key: "GBOX-XX-001" }, { key: "GBOX-XX-002" }],
-  },
-  {
-    id: uid(),
-    name: "PROXY PRO iOS",
-    category: "Mod Menu",
-    platforms: ["ios"],
-    image: "",
-    price: 180,
-    salePrice: null,
-    description: "ยิงตัวตามเมจขึ้นหัว สำหรับ iOS",
-    deliveryType: "link",
-    stock: [{ link: "https://example.com/dl/proxy-pro-ios" }],
-  },
-  {
-    id: uid(),
-    name: "HG Cheats Android",
-    category: "Mod Menu",
-    platforms: ["android"],
-    image: "",
-    price: 120,
-    salePrice: 99,
-    description: "Mod Menu สำหรับ Android",
-    deliveryType: "both",
-    stock: [{ key: "HG-AND-AAAA", link: "https://example.com/dl/hg-and" }],
-    hot: true,
-  },
-  {
-    id: uid(),
-    name: "Aim Trainer PC",
-    category: "PC Tool",
-    platforms: ["pc"],
-    image: "",
-    price: 200,
-    salePrice: null,
-    description: "เครื่องมือฝึกเล็งสำหรับ PC",
-    deliveryType: "key",
-    stock: [{ key: "AIM-PC-001" }, { key: "AIM-PC-002" }],
-  },
-];
+const sampleProducts = (): Product[] => {
+  _seedCounter = 0;
+  return [
+    {
+      id: seedId("p"),
+      name: "Fluorite Hack iOS",
+      category: "Mod Menu",
+      platforms: ["ios"],
+      image: "",
+      price: 350,
+      salePrice: 300,
+      description: "โปรไวต์สำหรับ iOS เกมส์ FreeFire — ใช้งานได้ 30 วัน",
+      deliveryType: "both",
+      stock: [
+        { key: "FLU-IOS-AAAA-1111", link: "https://example.com/dl/fluorite-ios" },
+        { key: "FLU-IOS-BBBB-2222", link: "https://example.com/dl/fluorite-ios" },
+        { key: "FLU-IOS-CCCC-3333", link: "https://example.com/dl/fluorite-ios" },
+      ],
+      hot: true,
+    },
+    {
+      id: seedId("p"),
+      name: "Gbox iOS [สำหรับติดตั้ง iPA]",
+      category: "Tool",
+      platforms: ["ios"],
+      image: "",
+      price: 250,
+      salePrice: null,
+      description: "Gbox สำหรับไว้ติดตั้ง iPA โปรต่าง ๆ",
+      deliveryType: "key",
+      stock: [{ key: "GBOX-XX-001" }, { key: "GBOX-XX-002" }],
+    },
+    {
+      id: seedId("p"),
+      name: "PROXY PRO iOS",
+      category: "Mod Menu",
+      platforms: ["ios"],
+      image: "",
+      price: 180,
+      salePrice: null,
+      description: "ยิงตัวตามเมจขึ้นหัว สำหรับ iOS",
+      deliveryType: "link",
+      stock: [{ link: "https://example.com/dl/proxy-pro-ios" }],
+    },
+    {
+      id: seedId("p"),
+      name: "HG Cheats Android",
+      category: "Mod Menu",
+      platforms: ["android"],
+      image: "",
+      price: 120,
+      salePrice: 99,
+      description: "Mod Menu สำหรับ Android",
+      deliveryType: "both",
+      stock: [{ key: "HG-AND-AAAA", link: "https://example.com/dl/hg-and" }],
+      hot: true,
+    },
+    {
+      id: seedId("p"),
+      name: "Aim Trainer PC",
+      category: "PC Tool",
+      platforms: ["pc"],
+      image: "",
+      price: 200,
+      salePrice: null,
+      description: "เครื่องมือฝึกเล็งสำหรับ PC",
+      deliveryType: "key",
+      stock: [{ key: "AIM-PC-001" }, { key: "AIM-PC-002" }],
+    },
+  ];
+};
 
 const initial = (): StoreData => ({
   settings: { ...defaultSettings, logo: defaultLogo },
   products: sampleProducts(),
-  promoCodes: [{ id: uid(), code: "WELCOME10", discountPercent: 10 }],
+  promoCodes: [{ id: "promo-welcome", code: "WELCOME10", discountPercent: 10 }],
   users: [],
   purchases: [],
   topUps: [],
@@ -262,9 +269,24 @@ function load(): StoreData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initial();
     const parsed = JSON.parse(raw);
-    const mergedSettings = { ...defaultSettings, ...(parsed.settings || {}) };
+    const base = initial();
+    const mergedSettings = {
+      ...base.settings,
+      ...(parsed.settings || {}),
+      theme: { ...base.settings.theme, ...(parsed.settings?.theme || {}) },
+      particles: { ...base.settings.particles, ...(parsed.settings?.particles || {}) },
+      announcement: { ...base.settings.announcement, ...(parsed.settings?.announcement || {}) },
+      banks: parsed.settings?.banks?.length ? parsed.settings.banks : base.settings.banks,
+      banners: parsed.settings?.banners || [],
+    };
     if (!mergedSettings.logo) mergedSettings.logo = defaultLogo;
-    return { ...initial(), ...parsed, settings: mergedSettings };
+    return {
+      ...base,
+      ...parsed,
+      settings: mergedSettings,
+      products: Array.isArray(parsed.products) && parsed.products.length ? parsed.products : base.products,
+      promoCodes: Array.isArray(parsed.promoCodes) && parsed.promoCodes.length ? parsed.promoCodes : base.promoCodes,
+    };
   } catch {
     return initial();
   }
@@ -296,19 +318,47 @@ const Ctx = createContext<StoreCtx | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<StoreData>(() => initial());
+  const [hydrated, setHydrated] = useState(false);
+  const skipNextSave = useState({ v: true })[0];
 
   // hydrate after mount (avoid SSR mismatch)
   useEffect(() => {
-    setData(load());
-  }, []);
+    const loaded = load();
+    skipNextSave.v = true;
+    setData(loaded);
+    setHydrated(true);
+  }, [skipNextSave]);
 
-  // persist
+  // persist (skip the very first hydration write)
   useEffect(() => {
+    if (!hydrated) return;
+    if (skipNextSave.v) {
+      skipNextSave.v = false;
+      return;
+    }
     save(data);
-  }, [data]);
+  }, [data, hydrated, skipNextSave]);
+
+  // cross-tab sync via storage event
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY || !e.newValue) return;
+      try {
+        const fresh = load();
+        skipNextSave.v = true;
+        setData(fresh);
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [skipNextSave]);
 
   // apply theme to CSS vars
   useEffect(() => {
+    if (typeof document === "undefined") return;
     const root = document.documentElement;
     const t = data.settings.theme;
     root.style.setProperty("--background", t.background);
@@ -381,49 +431,66 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const buy = useCallback(
     (productId: string, code?: string) => {
-      if (!data.currentUser || data.isAdmin) return { ok: false, error: "กรุณาเข้าสู่ระบบ" };
-      const product = data.products.find((p) => p.id === productId);
-      if (!product) return { ok: false, error: "ไม่พบสินค้า" };
-      if (product.stock.length === 0) return { ok: false, error: "สินค้าหมด" };
-      let basePrice = product.salePrice ?? product.price;
-      if (code && product.promoCodeId) {
-        const promo = data.promoCodes.find((c) => c.id === product.promoCodeId);
-        if (promo && promo.code.toLowerCase() === code.trim().toLowerCase()) {
-          basePrice = Math.round(basePrice * (1 - promo.discountPercent / 100));
+      let result: { ok: boolean; error?: string; record?: PurchaseRecord } = { ok: false, error: "เกิดข้อผิดพลาด" };
+      setData((d) => {
+        if (!d.currentUser || d.isAdmin) {
+          result = { ok: false, error: "กรุณาเข้าสู่ระบบ" };
+          return d;
         }
-      }
-      const user = data.users.find((u) => u.username === data.currentUser);
-      if (!user) return { ok: false, error: "ผู้ใช้ไม่ถูกต้อง" };
-      if (user.wallet < basePrice) return { ok: false, error: "ยอดเงินใน Wallet ไม่พอ กรุณาเติมเงิน" };
-
-      const delivered = product.stock[0];
-      const record: PurchaseRecord = {
-        id: uid(),
-        username: user.username,
-        productId: product.id,
-        productName: product.name,
-        productImage: product.image,
-        price: basePrice,
-        delivered,
-        deliveryType: product.deliveryType,
-        createdAt: Date.now(),
-      };
-
-      setData((d) => ({
-        ...d,
-        users: d.users.map((u) =>
-          u.username === user.username
-            ? { ...u, wallet: u.wallet - basePrice, points: u.points + Math.floor(basePrice / 10) }
-            : u,
-        ),
-        products: d.products.map((p) =>
-          p.id === product.id ? { ...p, stock: p.stock.slice(1) } : p,
-        ),
-        purchases: [record, ...d.purchases],
-      }));
-      return { ok: true, record };
+        const product = d.products.find((p) => p.id === productId);
+        if (!product) {
+          result = { ok: false, error: "ไม่พบสินค้า" };
+          return d;
+        }
+        if (!product.stock || product.stock.length === 0) {
+          result = { ok: false, error: "สินค้าหมด" };
+          return d;
+        }
+        let basePrice = product.salePrice ?? product.price;
+        if (code && product.promoCodeId) {
+          const promo = d.promoCodes.find((c) => c.id === product.promoCodeId);
+          if (promo && promo.code.toLowerCase() === code.trim().toLowerCase()) {
+            basePrice = Math.round(basePrice * (1 - promo.discountPercent / 100));
+          }
+        }
+        const user = d.users.find((u) => u.username === d.currentUser);
+        if (!user) {
+          result = { ok: false, error: "ผู้ใช้ไม่ถูกต้อง" };
+          return d;
+        }
+        if (user.wallet < basePrice) {
+          result = { ok: false, error: "ยอดเงินใน Wallet ไม่พอ กรุณาเติมเงิน" };
+          return d;
+        }
+        const delivered = product.stock[0];
+        const record: PurchaseRecord = {
+          id: uid(),
+          username: user.username,
+          productId: product.id,
+          productName: product.name,
+          productImage: product.image,
+          price: basePrice,
+          delivered,
+          deliveryType: product.deliveryType,
+          createdAt: Date.now(),
+        };
+        result = { ok: true, record };
+        return {
+          ...d,
+          users: d.users.map((u) =>
+            u.username === user.username
+              ? { ...u, wallet: u.wallet - basePrice, points: u.points + Math.floor(basePrice / 10) }
+              : u,
+          ),
+          products: d.products.map((p) =>
+            p.id === product.id ? { ...p, stock: p.stock.slice(1) } : p,
+          ),
+          purchases: [record, ...d.purchases],
+        };
+      });
+      return result;
     },
-    [data.currentUser, data.isAdmin, data.products, data.promoCodes, data.users],
+    [],
   );
 
   const submitTopUp = useCallback(
