@@ -180,79 +180,82 @@ const defaultSettings: SiteSettings = {
   ],
 };
 
-const sampleProducts = (): Product[] => [
-  {
-    id: uid(),
-    name: "Fluorite Hack iOS",
-    category: "Mod Menu",
-    platforms: ["ios"],
-    image: "",
-    price: 350,
-    salePrice: 300,
-    description: "โปรไวต์สำหรับ iOS เกมส์ FreeFire — ใช้งานได้ 30 วัน",
-    deliveryType: "both",
-    stock: [
-      { key: "FLU-IOS-AAAA-1111", link: "https://example.com/dl/fluorite-ios" },
-      { key: "FLU-IOS-BBBB-2222", link: "https://example.com/dl/fluorite-ios" },
-      { key: "FLU-IOS-CCCC-3333", link: "https://example.com/dl/fluorite-ios" },
-    ],
-    hot: true,
-  },
-  {
-    id: uid(),
-    name: "Gbox iOS [สำหรับติดตั้ง iPA]",
-    category: "Tool",
-    platforms: ["ios"],
-    image: "",
-    price: 250,
-    salePrice: null,
-    description: "Gbox สำหรับไว้ติดตั้ง iPA โปรต่าง ๆ",
-    deliveryType: "key",
-    stock: [{ key: "GBOX-XX-001" }, { key: "GBOX-XX-002" }],
-  },
-  {
-    id: uid(),
-    name: "PROXY PRO iOS",
-    category: "Mod Menu",
-    platforms: ["ios"],
-    image: "",
-    price: 180,
-    salePrice: null,
-    description: "ยิงตัวตามเมจขึ้นหัว สำหรับ iOS",
-    deliveryType: "link",
-    stock: [{ link: "https://example.com/dl/proxy-pro-ios" }],
-  },
-  {
-    id: uid(),
-    name: "HG Cheats Android",
-    category: "Mod Menu",
-    platforms: ["android"],
-    image: "",
-    price: 120,
-    salePrice: 99,
-    description: "Mod Menu สำหรับ Android",
-    deliveryType: "both",
-    stock: [{ key: "HG-AND-AAAA", link: "https://example.com/dl/hg-and" }],
-    hot: true,
-  },
-  {
-    id: uid(),
-    name: "Aim Trainer PC",
-    category: "PC Tool",
-    platforms: ["pc"],
-    image: "",
-    price: 200,
-    salePrice: null,
-    description: "เครื่องมือฝึกเล็งสำหรับ PC",
-    deliveryType: "key",
-    stock: [{ key: "AIM-PC-001" }, { key: "AIM-PC-002" }],
-  },
-];
+const sampleProducts = (): Product[] => {
+  _seedCounter = 0;
+  return [
+    {
+      id: seedId("p"),
+      name: "Fluorite Hack iOS",
+      category: "Mod Menu",
+      platforms: ["ios"],
+      image: "",
+      price: 350,
+      salePrice: 300,
+      description: "โปรไวต์สำหรับ iOS เกมส์ FreeFire — ใช้งานได้ 30 วัน",
+      deliveryType: "both",
+      stock: [
+        { key: "FLU-IOS-AAAA-1111", link: "https://example.com/dl/fluorite-ios" },
+        { key: "FLU-IOS-BBBB-2222", link: "https://example.com/dl/fluorite-ios" },
+        { key: "FLU-IOS-CCCC-3333", link: "https://example.com/dl/fluorite-ios" },
+      ],
+      hot: true,
+    },
+    {
+      id: seedId("p"),
+      name: "Gbox iOS [สำหรับติดตั้ง iPA]",
+      category: "Tool",
+      platforms: ["ios"],
+      image: "",
+      price: 250,
+      salePrice: null,
+      description: "Gbox สำหรับไว้ติดตั้ง iPA โปรต่าง ๆ",
+      deliveryType: "key",
+      stock: [{ key: "GBOX-XX-001" }, { key: "GBOX-XX-002" }],
+    },
+    {
+      id: seedId("p"),
+      name: "PROXY PRO iOS",
+      category: "Mod Menu",
+      platforms: ["ios"],
+      image: "",
+      price: 180,
+      salePrice: null,
+      description: "ยิงตัวตามเมจขึ้นหัว สำหรับ iOS",
+      deliveryType: "link",
+      stock: [{ link: "https://example.com/dl/proxy-pro-ios" }],
+    },
+    {
+      id: seedId("p"),
+      name: "HG Cheats Android",
+      category: "Mod Menu",
+      platforms: ["android"],
+      image: "",
+      price: 120,
+      salePrice: 99,
+      description: "Mod Menu สำหรับ Android",
+      deliveryType: "both",
+      stock: [{ key: "HG-AND-AAAA", link: "https://example.com/dl/hg-and" }],
+      hot: true,
+    },
+    {
+      id: seedId("p"),
+      name: "Aim Trainer PC",
+      category: "PC Tool",
+      platforms: ["pc"],
+      image: "",
+      price: 200,
+      salePrice: null,
+      description: "เครื่องมือฝึกเล็งสำหรับ PC",
+      deliveryType: "key",
+      stock: [{ key: "AIM-PC-001" }, { key: "AIM-PC-002" }],
+    },
+  ];
+};
 
 const initial = (): StoreData => ({
   settings: { ...defaultSettings, logo: defaultLogo },
   products: sampleProducts(),
-  promoCodes: [{ id: uid(), code: "WELCOME10", discountPercent: 10 }],
+  promoCodes: [{ id: "promo-welcome", code: "WELCOME10", discountPercent: 10 }],
   users: [],
   purchases: [],
   topUps: [],
@@ -266,9 +269,24 @@ function load(): StoreData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initial();
     const parsed = JSON.parse(raw);
-    const mergedSettings = { ...defaultSettings, ...(parsed.settings || {}) };
+    const base = initial();
+    const mergedSettings = {
+      ...base.settings,
+      ...(parsed.settings || {}),
+      theme: { ...base.settings.theme, ...(parsed.settings?.theme || {}) },
+      particles: { ...base.settings.particles, ...(parsed.settings?.particles || {}) },
+      announcement: { ...base.settings.announcement, ...(parsed.settings?.announcement || {}) },
+      banks: parsed.settings?.banks?.length ? parsed.settings.banks : base.settings.banks,
+      banners: parsed.settings?.banners || [],
+    };
     if (!mergedSettings.logo) mergedSettings.logo = defaultLogo;
-    return { ...initial(), ...parsed, settings: mergedSettings };
+    return {
+      ...base,
+      ...parsed,
+      settings: mergedSettings,
+      products: Array.isArray(parsed.products) && parsed.products.length ? parsed.products : base.products,
+      promoCodes: Array.isArray(parsed.promoCodes) && parsed.promoCodes.length ? parsed.promoCodes : base.promoCodes,
+    };
   } catch {
     return initial();
   }
