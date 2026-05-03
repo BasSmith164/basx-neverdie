@@ -400,7 +400,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "banners" }, () => {
         supabase.from("banners").select("*").order("sort_order").then(({ data }) =>
-          data && setBanners(data.map((r) => ({ id: r.id, image: r.image, title: r.title || undefined }))));
+          data && setBanners(data.map((r: any) => ({ id: r.id, image: r.image, title: r.title || undefined }))));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "promo_codes" }, () => {
         supabase.from("promo_codes").select("*").then(({ data }) =>
